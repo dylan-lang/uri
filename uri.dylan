@@ -138,6 +138,14 @@ define method split-path
   map(percent-decode, split(path, '/'))
 end;
 
+// Even though the RFC states that:
+// "3.4.  Query
+//   The query component contains non-hierarchical data that, along with
+//   data in the path component (Section 3.3), serves to identify a
+//   resource within the scope of the URI's scheme and naming authority
+//   (if any)."
+// We split the query into key-values, where "&foo=&" is different from &foo&.
+// The former sets the qvalue to "" and the latter sets it to #t. 
 define method split-query
     (query :: <string>, #key replacements :: false-or(<sequence>))
  => (parts :: <string-table>);
@@ -148,9 +156,6 @@ define method split-query
                                               remove-if-empty: #f,
                                               count: 2));
     qname := percent-decode(qname);
-    // Right now "&foo=&" is different from &foo&.  The former sets the
-    // qvalue to "" and the latter sets it to #t.  Does it matter?  Is
-    // &foo& even valid?
     if (qvalue)
       if (replacements)
         for (replacement in replacements)
@@ -354,16 +359,16 @@ define method remove-dot-segments (path :: <sequence>) => (result :: <sequence>)
   output;
 end;
 
-// Why is this called transform-uris?  It seems mork like a merge.
-// It could use some documentation.  --cgay
-//
+// 5.2.2.  Transform References
+// "Merges" a base and reference URI
+// A leading empty component in the path indicates that it's absolute.
+// Logic taken directly from the pseudeocode
 define method transform-uris
     (base :: <uri>, reference :: <uri>, 
      #key as :: subclass(<uri>) = <uri>)
  => (target :: <uri>)
   local method merge (base, reference)
       if (has-authority-part?(base) & empty?(base.uri-path))
-        // what's this about?  --cgay
         concatenate(#(""), reference.uri-path);
       else
 	concatenate(copy-sequence(base.uri-path, end: base.uri-path.size - 1),
@@ -398,8 +403,7 @@ define method transform-uris
                               reference.uri-query
                             end;
       else
-        target.uri-path := if ( // what's this for???  --cgay
-                               first(reference.uri-path) = "")
+        target.uri-path := if (first(reference.uri-path) = "")
                              remove-dot-segments(reference.uri-path)
                            else
                              remove-dot-segments(merge(base, reference))
@@ -412,7 +416,6 @@ define method transform-uris
     end if;
     target.uri-scheme := base.uri-scheme;
   end if;
-  // Why is the reference fragment used unconditionally?  --cgay
   target.uri-fragment := reference.uri-fragment;
   target;
 end method transform-uris;
