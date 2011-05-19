@@ -55,24 +55,21 @@ define method uri-authority
   result;
 end method uri-authority;
 
-// Could use alpha?() and digit?() from string-extensions.
-// Why are these not strings?
-define constant $alpha =
-  #('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z');
-define constant $digit = #('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+define constant $alpha :: <byte-string>
+  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz";
 
-//define constant $uri-scheme = concatenate($alpha, $digit, #('+', '-', '.'));
-//define constant $uri-gen-delims = #(':', '/', '?', '#', '[', ']', '@');
-define constant $uri-sub-delims = #('!', '$', '&', '\'', '(', ')',  '*', '+', ',', ';', '=');
-//define constant $uri-reserved = concatenate($uri-gen-delims, $uri-sub-delims);
-define constant $uri-unreserved = concatenate($alpha, $digit, #('-', '.', '_', '~'));
-define constant $uri-pchar = concatenate($uri-unreserved, $uri-sub-delims, #(':', '@'));
-define constant $uri-userinfo = concatenate($uri-unreserved, $uri-sub-delims, #(':'));
-define constant $uri-query = concatenate($uri-pchar, #('/', '?'));
-define constant $uri-query-no-plus = remove($uri-query, '+');
+define constant $digit :: <byte-string> = "0123456789";
+
+//define constant $uri-scheme :: <byte-string> = concatenate($alpha, $digit, "+-.");
+//define constant $uri-gen-delims :: <byte-string> = ":/?#[]@"";
+define constant $uri-sub-delims :: <byte-string> = "\'!$&()*+,;=";
+//define constant $uri-reserved :: <byte-string> = concatenate($uri-gen-delims, $uri-sub-delims);
+define constant $uri-unreserved :: <byte-string> = concatenate($alpha, $digit, "-._~");
+define constant $uri-pchar :: <byte-string> = concatenate($uri-unreserved, $uri-sub-delims, ":@");
+define constant $uri-userinfo :: <byte-string> = concatenate($uri-unreserved, $uri-sub-delims, ":");
+define constant $uri-query :: <byte-string> = concatenate($uri-pchar, "/?");
+define constant $uri-query-no-plus :: <byte-string> = remove($uri-query, '+');
 //define constant $uri-port = $digit;
 define constant $uri-segment = $uri-pchar;
 //define constant $uri-fragment = $uri-query;
