@@ -32,5 +32,5 @@ define module uri
   export remove-dot-segments,
     split-path, split-query;
   export absolute?, relative?;
-  export percent-decode;
+  export percent-encode, percent-decode, $uri-pchar;
 end module;
