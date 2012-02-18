@@ -1,6 +1,9 @@
 module: uri
-author: turbo24prg 
+author: Bastian Mueller
 synopsis: RFC 3986: Uniform Resource Identifier (URI): Generic Syntax
+Copyright:    Original Code is Copyright (c) 2011 Dylan Hackers
+              All rights reserved.
+License:      See License.txt in this distribution for details.
 
 define class <uri> (<object>)
   slot uri-scheme :: <string> = "",
