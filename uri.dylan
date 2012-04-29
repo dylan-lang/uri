@@ -153,7 +153,7 @@ define method split-query
   let table = make(<string-table>, size: parts.size);
   for (part in parts)
     let (qname, qvalue) = apply(values, split(part, "=",
-                                              remove-if-empty: #f,
+                                              remove-if-empty?: #f,
                                               count: 2));
     qname := percent-decode(qname);
     if (qvalue)
@@ -332,7 +332,7 @@ end method percent-decode;
 define generic remove-dot-segments (path :: <object>) => (result :: <object>);
 
 define method remove-dot-segments (path :: <string>) => (result :: <string>);
-  let path = split(path, "/", remove-if-empty: #f);
+  let path = split(path, "/", remove-if-empty?: #f);
   path := remove-dot-segments(path);
   join(path, "/")
 end;
