@@ -1,6 +1,6 @@
 module: uri-test
 
-define macro uri-reference-test-definer 
+define macro uri-reference-test-definer
   { define uri-reference-test ?name:token
       ?uri:token
       ( ?scheme:token , ?authority:token ,
@@ -8,9 +8,9 @@ define macro uri-reference-test-definer
         ?fragment:token )
       => ?result:token
    end
-  } 
+  }
    =>
-  { 
+  {
     define test "uri-reference-" ## ?name ()
       let uri = parse-uri(?uri);
       check-equal("scheme", uri.uri-scheme, ?scheme);

@@ -53,7 +53,7 @@ define method uri-authority
   end;
   result := concatenate(result, uri.uri-host | "");
   if (uri.uri-port)
-    result := concatenate(result, ":", integer-to-string(uri.uri-port));  
+    result := concatenate(result, ":", integer-to-string(uri.uri-port));
   end if;
   result;
 end method uri-authority;
@@ -101,7 +101,7 @@ define method parse-uri-as
   let uri = make(class,
                  scheme: scheme | "",
                  userinfo: userinfo | "",
-                 host: host | "", 
+                 host: host | "",
                  port: port & string-to-integer(port),
                  fragment: fragment | "");
   if (~empty?(path))
@@ -130,7 +130,7 @@ end;
 
 define constant absolute? = complement(relative?);
 
-// split parts 
+// split parts
 
 define method split-path
     (path :: <string>)
@@ -145,7 +145,7 @@ end;
 //   resource within the scope of the URI's scheme and naming authority
 //   (if any)."
 // We split the query into key-values, where "&foo=&" is different from &foo&.
-// The former sets the qvalue to "" and the latter sets it to #t. 
+// The former sets the qvalue to "" and the latter sets it to #t.
 define method split-query
     (query :: <string>, #key replacements :: false-or(<sequence>))
  => (parts :: <string-table>);
@@ -187,12 +187,12 @@ define method as
   build-uri(uri)
 end method as;
 
-// build-uri 
+// build-uri
 
 // Turn a uri into a string
 define open generic build-uri
     (uri :: <uri>, #key include-scheme, include-authority)
- => (result :: <string>); 
+ => (result :: <string>);
 
 define method build-uri
     (uri :: <uri>,
@@ -226,7 +226,7 @@ define method build-path
  => (encoded-path :: <string>)
   if (empty?(uri.uri-path))
     ""
-  else  
+  else
     join(map(curry(percent-encode, $uri-segment),
              uri.uri-path),
          "/")
@@ -250,14 +250,14 @@ define method build-query-internal
  => (encoded-query :: <string>)
   if (empty?(uri.uri-query))
     ""
-  else 
+  else
     let parts = make(<stretchy-vector>);
     for (value keyed-by key in uri.uri-query)
       key := percent-encode(chars-not-to-encode, key);
       add-key-value(parts, key, value);
     end for;
     join(parts, "&")
-  end if; 
+  end if;
 end method build-query-internal;
 
 define method add-key-value
@@ -311,16 +311,16 @@ define method percent-decode (encoded :: <byte-string>) => (unencoded :: <string
         decode? := #t;
       else
         if (decode? & size(encoded) > position + 1)
-	  let low = encoded[position + 1];
-	  char := as(<string>, list(char, low));
-	  char := string-to-integer(char, base: 16);
+          let low = encoded[position + 1];
+          char := as(<string>, list(char, low));
+          char := string-to-integer(char, base: 16);
           char := as(<byte-character>, char);
           ignore? := #t;
-	  decode? := #f;
+          decode? := #f;
         end if;
-	unless (decode?)
-	  result := concatenate(result, list(char));
-	end unless;
+        unless (decode?)
+          result := concatenate(result, list(char));
+        end unless;
       end if;
     end if;
   end for;
@@ -353,7 +353,7 @@ define method remove-dot-segments (path :: <sequence>) => (result :: <sequence>)
       end if;
     elseif (segment = ".")
     else
-      push-last(output, segment);    
+      push-last(output, segment);
     end if;
   end for;
   output;
@@ -364,14 +364,14 @@ end;
 // A leading empty component in the path indicates that it's absolute.
 // Logic taken directly from the pseudeocode
 define method transform-uris
-    (base :: <uri>, reference :: <uri>, 
+    (base :: <uri>, reference :: <uri>,
      #key as :: subclass(<uri>) = <uri>)
  => (target :: <uri>)
   local method merge (base, reference)
       if (has-authority-part?(base) & empty?(base.uri-path))
         concatenate(#(""), reference.uri-path);
       else
-	concatenate(copy-sequence(base.uri-path, end: base.uri-path.size - 1),
+        concatenate(copy-sequence(base.uri-path, end: base.uri-path.size - 1),
                     reference.uri-path)
       end if;
     end;
@@ -411,7 +411,7 @@ define method transform-uris
         target.uri-query := reference.uri-query;
       end if;
       target.uri-userinfo := base.uri-userinfo;
-      target.uri-host := base.uri-host;    
+      target.uri-host := base.uri-host;
       target.uri-port := base.uri-port;
     end if;
     target.uri-scheme := base.uri-scheme;
@@ -424,7 +424,7 @@ define method print-message (uri :: <uri>, stream :: <stream>) => ();
   format(stream, "%s", build-uri(uri))
 end;
 
-/* 
+/*
 
 // example / usage / testing
 
@@ -451,7 +451,7 @@ begin
   format-out("%=\n", percent-decode("%rg"));
 
   let uri = parse-uri("http://foo:bar@baz.blub:23/path/test/../page?foo=bar&q1=q2#extra");
-  format-out("%s\n", build-uri(uri)); 
+  format-out("%s\n", build-uri(uri));
   uri := make(<uri>, scheme: "http", userinfo: "foo@bar:blub");
   format-out("%s\n", build-uri(uri));
   uri := make(<uri>, scheme: "http", host: "foobar", path: "/p1/p2/p3", query: "k1=v1&k2=v2");
