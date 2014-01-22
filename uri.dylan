@@ -83,14 +83,135 @@ define constant $uri-regex :: <regex>
 
 define constant $plus :: <regex> = compile-regex("[+]");
 
+define inline function parse-scheme
+    (uri :: <string>)
+ => (scheme :: false-or(<string>), next-index :: <integer>)
+  let scheme-end = find-delimiter(uri, ':');
+  if (scheme-end)
+    values(copy-sequence(uri, start: 0, end: scheme-end), scheme-end + 1)
+  else
+    values(#f, 0)
+  end
+end function parse-scheme;
+
+define inline function parse-authority
+    (uri :: <string>, start :: <integer>)
+ => (userinfo :: false-or(<string>),
+     host :: <string>,
+     port :: false-or(<integer>),
+     next-index :: <integer>)
+  let stop = uri.size;
+  let userinfo :: false-or(<string>) = #f;
+  let host :: <string> =  "";
+  let port :: false-or(<integer>) = #f;
+
+  let userinfo-end = find-delimiter(uri, '@', start: start);
+  let authority-end = find-delimiter(uri, '/', start: start);
+  if (authority-end & userinfo-end & userinfo-end < authority-end)
+    // parse userinfo
+    userinfo := copy-sequence(uri, start: start, end: userinfo-end);
+  end if;
+  let host-start = userinfo-end | start;
+  let port-start = find-delimiter(uri, ':', start: host-start);
+  // parse port
+  if (port-start)
+    port := string-to-integer(copy-sequence(uri, start: port-start, end: authority-end));
+  end if;
+  // parse host
+  host := copy-sequence(uri, start: host-start, end: port-start | authority-end | stop);
+
+  values(userinfo, host, port, authority-end | stop)
+end function parse-authority;
+
+define inline function parse-path
+    (uri :: <string>, start :: <integer>)
+ => (path :: false-or(<string>), next-index :: <integer>)
+  let stop = uri.size;
+  let path-end = find-delimiters(uri, "?#", start: start) | stop;
+  if (start < path-end)
+    values(copy-sequence(uri, start: start, end: path-end), path-end)
+  else
+    values(#f, start)
+  end if
+end function parse-path;
+
+define inline function parse-query
+    (uri :: <string>, start :: <integer>)
+ => (query :: false-or(<string>), next-index :: <integer>)
+  let stop = uri.size;
+  if (start < stop)
+    if (uri[start] == '?')
+      let query-end = find-delimiter(uri, '#', start: start + 1) | stop;
+      values(copy-sequence(uri, start: start + 1, end: query-end), query-end)
+    else
+      values(#f, start)
+    end if
+  else
+    values(#f, start)
+  end if
+end function parse-query;
+
+define inline function parse-fragment
+    (uri :: <string>, start :: <integer>)
+ => (fragment :: false-or(<string>))
+  let stop = uri.size;
+  if (start < stop)
+    // probably not necessary
+    if (uri[start] == '#')
+      copy-sequence(uri, start: start + 1, end: stop)
+    else
+      #f
+    end if
+  else
+    #f
+  end if
+end function parse-fragment;
+
+define function %parse-uri
+    (uri :: <string>)
+ => (scheme :: false-or(<string>),
+     userinfo :: false-or(<string>),
+     host :: false-or(<string>),
+     port :: false-or(<integer>),
+     path :: false-or(<string>),
+     query :: false-or(<string>),
+     fragment :: false-or(<string>))
+  let stop = uri.size;
+
+  let (scheme :: false-or(<string>), scheme-end :: <integer>)
+    = if (starts-with?(uri, "//"))
+        values(#f, 0)
+      else
+        parse-scheme(uri)
+      end if;
+
+  if (starts-with?(copy-sequence(uri, start: scheme-end), "//"))
+    // parse authority path-abempty
+    let (userinfo, host, port, authority-end)
+      = parse-authority(uri, scheme-end + 2);
+    let (path, path-end) = parse-path(uri, authority-end);
+    let (query, query-end) = parse-query(uri, path-end);
+    let (fragment, fragment-end) = parse-fragment(uri, query-end);
+    values(scheme, userinfo, host, port, path, query, fragment)
+  else
+    // parse path-absolute, path-noscheme or path-empty
+    let (path, path-end) = parse-path(uri, scheme-end);
+    let (query, query-end) = parse-query(uri, path-end);
+    let fragment = parse-fragment(uri, query-end);
+    values(scheme, #f, #f, #f, path, query, fragment)
+  end if
+end function %parse-uri;
+
 define method parse-uri-as
     (class :: subclass(<uri>), uri :: <string>)
  => (result :: <uri>)
-  let (uri, _scheme, scheme, _authority, authority,
-       _userinfo, userinfo, host, _port, port,
-       path, _query, query, _fragment, fragment)
-    = regex-search-strings($uri-regex, uri);
-  // inside generic method to save code duplication
+  let (scheme, userinfo, host, port, path, query, fragment)
+    = if (empty?(uri))
+        values(#f, #f, #f, #f, #f, #f, #f)
+      else
+        %parse-uri(uri)
+      end if;
+
   if (class == <url> & query)
     query := regex-replace(query, $plus, " ");
   end if;
@@ -102,9 +223,9 @@ define method parse-uri-as
                  scheme: scheme | "",
                  userinfo: userinfo | "",
                  host: host | "",
-                 port: port & string-to-integer(port),
+                 port: port,
                  fragment: fragment | "");
-  if (~empty?(path))
+  if (path & ~empty?(path))
     uri.uri-path := split-path(path);
   end if;
   if (query)

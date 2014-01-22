@@ -5,6 +5,8 @@ define library uri
   use collection-extensions;
   use io;
   use regular-expressions;
+  use system;
+  use strings;
   export uri;
 end library;
 
@@ -15,8 +17,11 @@ define module uri
   use subseq;
   use format;
   use format-out;
+  use locators-internals,
+    import: { find-delimiter, find-delimiters };
   use regular-expressions;
   use streams;
+  use strings;
   export <uri>, <url>,
     uri-scheme, uri-scheme-setter,
     uri-userinfo, uri-userinfo-setter,
