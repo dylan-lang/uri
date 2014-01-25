@@ -77,10 +77,6 @@ define constant $uri-query-no-plus :: <byte-string> = remove($uri-query, '+');
 define constant $uri-segment = $uri-pchar;
 //define constant $uri-fragment = $uri-query;
 
-define constant $uri-regex :: <regex>
-    = compile-regex("^(([^:/?#]+):)?(//((([^/?#]*)@)?([^/?#:]*)(:([^/?#]*))?))?([^?#]*)"
-                    "(\\?([^#]*))?(#(.*))?");
-
 define constant $plus :: <regex> = compile-regex("[+]");
 
 define inline function parse-scheme
