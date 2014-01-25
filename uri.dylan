@@ -417,8 +417,10 @@ end method percent-encode;
 
 // percent-decode
 
-define method percent-decode (encoded :: <byte-string>) => (unencoded :: <string>);
-  let result = "";
+define method percent-decode
+    (encoded :: <byte-string>)
+ => (unencoded :: <string>);
+  let result = make(limited(<stretchy-vector>, of: <byte-character>));
   let (decode?, ignore?) = values(#f, #f);
   for (char in encoded, position from 0)
     if (ignore?)
@@ -428,20 +430,21 @@ define method percent-decode (encoded :: <byte-string>) => (unencoded :: <string
         decode? := #t;
       else
         if (decode? & size(encoded) > position + 1)
-          let low = encoded[position + 1];
-          char := as(<string>, list(char, low));
-          char := string-to-integer(char, base: 16);
-          char := as(<byte-character>, char);
+          let encoded-char = make(<byte-string>, size: 2);
+          encoded-char[0] := char;
+          encoded-char[1] := encoded[position + 1];
+          let decoded-char = as(<byte-character>,
+                                string-to-integer(encoded-char, base: 16));
           ignore? := #t;
           decode? := #f;
+          add!(result, decoded-char);
+        else
+          add!(result, char);
         end if;
-        unless (decode?)
-          result := concatenate(result, list(char));
-        end unless;
       end if;
     end if;
   end for;
-  result;
+  as(<string>, result)
 end method percent-decode;
 
 // remove-dot-segments
