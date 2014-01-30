@@ -264,7 +264,7 @@ end;
 // We split the query into key-values, where "&foo=&" is different from &foo&.
 // The former sets the qvalue to "" and the latter sets it to #t.
 define method split-query
-    (query :: <string>, #key replacements :: false-or(<sequence>))
+    (query :: <string>)
  => (parts :: <string-table>);
   let parts = split(query, "&");
   let table = make(<string-table>, size: parts.size);
@@ -274,13 +274,6 @@ define method split-query
                                               count: 2));
     qname := percent-decode(qname);
     if (qvalue)
-      if (replacements)
-        for (replacement in replacements)
-          let old :: <regex> = head(replacement);
-          let new :: <string> = tail(replacement);
-          qvalue := regex-replace(qvalue, old, new);
-        end for;
-      end if;
       qvalue := percent-decode(qvalue);
     else
       qvalue := #t;
@@ -557,8 +550,7 @@ begin
   let foo = parse-url("http://baz.blub/pat%2fh/test?fo%20o=ba%2f%20r");
   format-out("%s, %=,%s\n", foo.uri-query, foo.uri-path, foo);
 
-  format-out("%s\n", split-query("foo=bar+blub&baz",
-                                 replacements: list(pair($plus, " ")))["foo"]);
+  format-out("%s\n", split-query("foo=bar+blub&baz"));
 
   let uri = parse-uri("http://foo:bar@baz.blub:23/path/test/../page?fo%20=ba+r&q1=q2&q3=&q4#extra");
   let url = parse-url("http://foo:bar@baz.blub:23/path/test/../page?fo%20o=b+r&q1=q2&q3=&q4#extra");
