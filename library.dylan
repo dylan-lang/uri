@@ -4,7 +4,6 @@ define library uri
   use common-dylan;
   use collection-extensions;
   use io;
-  use regular-expressions;
   use system;
   use strings;
   export uri;
@@ -19,7 +18,6 @@ define module uri
   use format-out;
   use locators-internals,
     import: { find-delimiter, find-delimiters };
-  use regular-expressions;
   use streams;
   use strings;
   export <uri>, <url>,
