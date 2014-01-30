@@ -34,6 +34,13 @@ define test uri-base-test ()
   check-equal("base-uri fragment", $base-uri.uri-fragment, "");
 end;
 
+define test uri-plus-decode-test ()
+  let uri = parse-uri("http://a/p?x=a+test");
+  check-equal("uri query x has a plus", uri.uri-query["x"], "a+test");
+  let url = parse-url("http://a/p?x=a+test");
+  check-equal("url query x has a space", url.uri-query["x"], "a test");
+end;
+
 define test uri-percent-decode-test ()
   let uri = parse-uri("http://a/p?x=a%20test&y=it%27s");
   check-equal("uri query x", uri.uri-query["x"], "a test");
@@ -251,6 +258,7 @@ end;
 
 define suite uri-transform-suite ()
   test uri-base-test;
+  test uri-plus-decode-test;
   test uri-percent-decode-test;
   suite uri-transform-normal-suite;
   suite uri-transform-abnormal-suite

@@ -77,8 +77,6 @@ define constant $uri-query-no-plus :: <byte-string> = remove($uri-query, '+');
 define constant $uri-segment = $uri-pchar;
 //define constant $uri-fragment = $uri-query;
 
-define constant $plus :: <regex> = compile-regex("[+]");
-
 define inline function parse-scheme
     (uri :: <string>)
  => (scheme :: false-or(<string>), next-index :: <integer>)
@@ -209,7 +207,7 @@ define method parse-uri-as
       end if;
 
   if (class == <url> & query)
-    query := regex-replace(query, $plus, " ");
+    query := replace-substrings(query, "+", " ");
   end if;
   if (scheme) scheme := percent-decode(scheme); end;
   if (userinfo) userinfo := percent-decode(userinfo); end;
