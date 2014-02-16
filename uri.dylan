@@ -18,6 +18,7 @@ define class <uri> (<object>)
   slot uri-path :: <sequence> = make(<deque>),
     init-keyword: path:;
   // keys without values are #t
+  // (I think #f would work better as the null value. --cgay)
   slot uri-query :: <string-table> = make(<string-table>),
     init-keyword: query:;
   slot uri-fragment :: <string> = "",
@@ -34,7 +35,22 @@ end class <uri>;
 //   component.
 //   Need an error class for these.  e.g., <invalid-uri-error>
 
-define class <url> (<uri>) end;
+define class <url> (<uri>)
+end;
+
+define class <uri-error> (<error>)
+end;
+
+define class <uri-parse-error> (<uri-error>)
+end;
+
+define function parse-error
+    (input :: <string>, pos :: <integer>, msg :: <string>)
+ => ()
+  signal(make(<uri-parse-error>,
+              format-string: "Error parsing URI %= at index %d: %s",
+              format-arguments: list(input, pos, msg)));
+end;
 
 define method has-authority-part?
     (uri :: <uri>) => (has-it? :: <boolean>)
@@ -107,10 +123,20 @@ define inline function parse-authority
   end if;
   let host-start = userinfo-end | start;
   let port-start = find-delimiter(uri, ':', start: host-start);
-  // parse port
   if (port-start)
-    port := string-to-integer(copy-sequence(uri, start: port-start, end: authority-end));
-  end if;
+    let bpos :: <integer> = port-start + 1;
+    let epos :: <integer> = authority-end | stop;
+    if (port-start + 1 >= epos)
+      parse-error(uri, port-start, "invalid port");
+    else
+      let port-string = copy-sequence(uri, start: bpos, end: epos);
+      block ()
+        port := string-to-integer(port-string);
+      exception (ex :: <error>)
+        parse-error(uri, bpos, "invalid port");
+      end;
+    end;
+  end;
   // parse host
   host := copy-sequence(uri, start: host-start, end: port-start | authority-end | stop);
 
@@ -587,4 +613,3 @@ begin
   format-out("as: %s\n", as(<string>, parse-uri("http://foo?a=1&b=2#anchor")));
 end;
 */
-
