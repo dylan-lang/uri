@@ -36,4 +36,5 @@ define module uri
     split-path, split-query;
   export absolute?, relative?;
   export percent-encode, percent-decode, $uri-pchar;
-end module;
+  export <uri-parse-error>;
+end module uri;

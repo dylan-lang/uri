@@ -139,6 +139,15 @@ define uri-reference-test normal-test-23
   "../../g" ("", "", "../../g", "", "") => "http://a/g"
 end;
 
+define uri-reference-test has-port-test-1
+  "http://host:80" ("http", "host:80", "", "", "") => "http://host:80"
+end;
+
+define uri-reference-test has-port-test-2
+  "http://host:80/abc" ("http", "host:80", "/abc", "", "") => "http://host:80/abc"
+end;
+
+
 define uri-reference-test abnormal-test-1
   "../../../g" ("", "", "../../../g", "", "") => "http://a/g"
 end;
@@ -237,6 +246,8 @@ define suite uri-transform-normal-suite ()
   test uri-reference-normal-test-21;
   test uri-reference-normal-test-22;
   test uri-reference-normal-test-23;
+  test uri-reference-has-port-test-1;
+  test uri-reference-has-port-test-2;
 end;
 
 define suite uri-transform-abnormal-suite ()
@@ -268,8 +279,16 @@ define suite uri-normalization-suite ()
   test uri-path-segment-normalization-test;
 end;
 
+define test parse-error-test ()
+  for (uri in #["http://host:xx/abc"])
+    assert-signals(<uri-parse-error>, parse-uri(uri), uri);
+  end;
+end test parse-error-test;
+
+
 // exported
 define suite uri-test-suite ()
   suite uri-transform-suite;
   suite uri-normalization-suite;
+  test parse-error-test;
 end;
