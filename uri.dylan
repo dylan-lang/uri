@@ -419,7 +419,7 @@ end;
 // percent-encode
 
 define method percent-encode
-    (chars :: <sequence>, unencoded :: <byte-string>)
+    (chars :: <byte-string>, unencoded :: <byte-string>)
  => (encoded :: <string>)
   let encoded = "";
   for (char in unencoded)
