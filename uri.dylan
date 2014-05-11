@@ -19,7 +19,7 @@ define class <uri> (<object>)
     init-keyword: path:;
   // keys without values are #t
   // (I think #f would work better as the null value. --cgay)
-  slot uri-query :: <string-table> = make(<string-table>),
+  slot uri-query :: false-or(<string-table>) = #f,
     init-keyword: query:;
   slot uri-fragment :: <string> = "",
     init-keyword: fragment:;
@@ -342,7 +342,7 @@ define method build-uri
     add!(parts, uri.uri-authority);
   end;
   add!(parts, build-path(uri));
-  unless (empty?(uri.uri-query))
+  unless (~uri.uri-query | empty?(uri.uri-query))
     add!(parts, "?");
     add!(parts, build-query(uri));
   end;
@@ -382,7 +382,7 @@ end;
 define method build-query-internal
     (uri :: <uri>, chars-not-to-encode :: <sequence>)
  => (encoded-query :: <string>)
-  if (empty?(uri.uri-query))
+  if (~uri.uri-query | empty?(uri.uri-query))
     ""
   else
     let parts = make(<stretchy-vector>);
@@ -534,7 +534,7 @@ define method transform-uris
       // reference's scheme and authority were both empty...
       if (empty?(reference.uri-path))
         target.uri-path := base.uri-path;
-        target.uri-query := if (empty?(reference.uri-query))
+        target.uri-query := if (~reference.uri-query | empty?(reference.uri-query))
                               base.uri-query
                             else
                               reference.uri-query
