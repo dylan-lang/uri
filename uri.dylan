@@ -1,7 +1,7 @@
 module: uri
 author: Bastian Mueller
 synopsis: RFC 3986: Uniform Resource Identifier (URI): Generic Syntax
-Copyright:    Original Code is Copyright (c) 2011 Dylan Hackers
+Copyright:    Original Code is Copyright (c) 2018 Dylan Hackers
               All rights reserved.
 License:      See License.txt in this distribution for details.
 
