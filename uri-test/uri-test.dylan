@@ -290,10 +290,19 @@ define test parse-error-test ()
   end;
 end test parse-error-test;
 
+define test split-query-test ()
+  let t = make(<string-table>);
+  t["a"] := #t;
+  t["b"] := #("3", "2");
+  t["c"] := #(#t, "4");
+  t["d"] := "5";
+  assert-equal(split-query("a&b=2&b=3&c=4&c&d=5"), t);
+end;
 
 // exported
 define suite uri-test-suite ()
   suite uri-transform-suite;
   suite uri-normalization-suite;
   test parse-error-test;
+  test split-query-test;
 end;
