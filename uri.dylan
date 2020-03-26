@@ -287,33 +287,24 @@ end;
 //   (if any)."
 // We split the query into key-values, where "&foo=&" is different from &foo&.
 // The former sets the qvalue to "" and the latter sets it to #t.
-define method split-query
-    (query :: <string>)
- => (parts :: <string-table>);
+define method split-query (query :: <string>) => (parts :: <string-table>);
   let parts = split(query, "&");
   let table = make(<string-table>, size: parts.size);
   for (part in parts)
-    let (qname, qvalue) = apply(values, split(part, "=",
-                                              remove-if-empty?: #f,
-                                              count: 2));
+    let (qname, qvalue)
+      = apply(values, split(part, "=", remove-if-empty?: #f, count: 2));
     qname := percent-decode(qname);
-    if (qvalue)
-      qvalue := percent-decode(qvalue);
-    else
-      qvalue := #t;
-    end if;
-    if (element(table, qname, default: #f))
-      table[qname] := if (instance?(table[qname], <string>))
-                        list(table[qname], qvalue);
-                      else
-                        pair(qvalue, table[qname]);
-                      end if;
-    else
-      table[qname] := qvalue;
-    end if;
+    qvalue := if (qvalue) percent-decode(qvalue) else #t end;
+    let v = element(table, qname, default: #f);
+    table[qname] := select (v by instance?)
+                      <string>, singleton(#t) => list(qvalue, v);
+                      // Should we reverse these at the end to preserve order?
+                      <list> => pair(qvalue, v);
+                      singleton(#f) => qvalue;
+                    end;
   end for;
-  table;
-end method split-query;
+  table
+end method;
 
 define method as
     (class == <string>, uri :: <uri>)
