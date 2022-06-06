@@ -96,7 +96,7 @@ define constant $uri-segment = $uri-pchar;
 define inline function parse-scheme
     (uri :: <string>)
  => (scheme :: false-or(<string>), next-index :: <integer>)
-  let scheme-end = find-delimiter(uri, ':');
+  let scheme-end = find-any(uri, method (c) c == ':' end);
   if (scheme-end)
     values(copy-sequence(uri, start: 0, end: scheme-end), scheme-end + 1)
   else
@@ -115,14 +115,14 @@ define inline function parse-authority
   let host :: <string> =  "";
   let port :: false-or(<integer>) = #f;
 
-  let userinfo-end = find-delimiter(uri, '@', start: start);
-  let authority-end = find-delimiter(uri, '/', start: start);
+  let userinfo-end = find-any(uri, method (c) c == '@' end, start: start);
+  let authority-end = find-any(uri, method (c) c == '/' end, start: start);
   if (authority-end & userinfo-end & userinfo-end < authority-end)
     // parse userinfo
     userinfo := copy-sequence(uri, start: start, end: userinfo-end);
   end if;
   let host-start = userinfo-end | start;
-  let port-start = find-delimiter(uri, ':', start: host-start);
+  let port-start = find-any(uri, method (c) c == ':' end, start: host-start);
   if (port-start)
     let bpos :: <integer> = port-start + 1;
     let epos :: <integer> = authority-end | stop;
@@ -147,7 +147,7 @@ define inline function parse-path
     (uri :: <string>, start :: <integer>)
  => (path :: false-or(<string>), next-index :: <integer>)
   let stop = uri.size;
-  let path-end = find-delimiters(uri, "?#", start: start) | stop;
+  let path-end = find-any(uri, method (c) c == '?' | c == '#' end, start: start) | stop;
   if (start < path-end)
     values(copy-sequence(uri, start: start, end: path-end), path-end)
   else
@@ -161,7 +161,7 @@ define inline function parse-query
   let stop = uri.size;
   if (start < stop)
     if (uri[start] == '?')
-      let query-end = find-delimiter(uri, '#', start: start + 1) | stop;
+      let query-end = find-any(uri, method (c) c == '#' end, start: start + 1) | stop;
       values(copy-sequence(uri, start: start + 1, end: query-end), query-end)
     else
       values(#f, start)
@@ -548,7 +548,7 @@ define method transform-uris
   target;
 end method transform-uris;
 
-define method print-message (uri :: <uri>, stream :: <stream>) => ();
+define method print-message (uri :: <uri>, stream :: <stream>) => ()
   format(stream, "%s", build-uri(uri))
 end;
 

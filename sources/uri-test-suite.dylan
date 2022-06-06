@@ -1,4 +1,4 @@
-module: uri-test
+module: uri-test-suite
 
 define macro uri-reference-test-definer
   { define uri-reference-test ?name:token
@@ -226,64 +226,6 @@ define test uri-path-segment-normalization-test ()
   check-equal("path", "b/c", remove-dot-segments("a/../../../b/c"));
 end;
 
-define suite uri-transform-normal-suite ()
-  test uri-reference-normal-test-1;
-  test uri-reference-normal-test-2;
-  test uri-reference-normal-test-3;
-  test uri-reference-normal-test-4;
-  test uri-reference-normal-test-5;
-  test uri-reference-normal-test-6;
-  test uri-reference-normal-test-7;
-  test uri-reference-normal-test-8;
-  test uri-reference-normal-test-9;
-  test uri-reference-normal-test-10;
-  test uri-reference-normal-test-11;
-  test uri-reference-normal-test-12;
-  test uri-reference-normal-test-13;
-  test uri-reference-normal-test-14;
-  test uri-reference-normal-test-15;
-  test uri-reference-normal-test-16;
-  test uri-reference-normal-test-17;
-  test uri-reference-normal-test-18;
-  test uri-reference-normal-test-19;
-  test uri-reference-normal-test-20;
-  test uri-reference-normal-test-21;
-  test uri-reference-normal-test-22;
-  test uri-reference-normal-test-23;
-  test uri-reference-has-port-test-1;
-  test uri-reference-has-port-test-2;
-end;
-
-define suite uri-transform-abnormal-suite ()
-  test uri-reference-abnormal-test-1;
-  test uri-reference-abnormal-test-2;
-  test uri-reference-abnormal-test-3;
-  test uri-reference-abnormal-test-4;
-  test uri-reference-abnormal-test-5;
-  test uri-reference-abnormal-test-6;
-  test uri-reference-abnormal-test-7;
-  test uri-reference-abnormal-test-8;
-  test uri-reference-abnormal-test-9;
-  test uri-reference-abnormal-test-10;
-  test uri-reference-abnormal-test-11;
-  test uri-reference-abnormal-test-12;
-  test uri-reference-abnormal-test-13;
-  test uri-reference-abnormal-test-14;
-end;
-
-define suite uri-transform-suite ()
-  test uri-base-test;
-  test uri-plus-decode-test;
-  test uri-percent-encode-test;
-  test uri-percent-decode-test;
-  suite uri-transform-normal-suite;
-  suite uri-transform-abnormal-suite
-end;
-
-define suite uri-normalization-suite ()
-  test uri-path-segment-normalization-test;
-end;
-
 define test parse-error-test ()
   for (uri in #["http://host:xx/abc"])
     assert-signals(<uri-parse-error>, parse-uri(uri), uri);
@@ -299,10 +241,4 @@ define test split-query-test ()
   assert-equal(split-query("a&b=2&b=3&c=4&c&d=5"), t);
 end;
 
-// exported
-define suite uri-test-suite ()
-  suite uri-transform-suite;
-  suite uri-normalization-suite;
-  test parse-error-test;
-  test split-query-test;
-end;
+run-test-application()
