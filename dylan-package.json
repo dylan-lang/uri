@@ -1,0 +1,12 @@
+{
+    "name": "uri",
+    "version": "1.0.1",
+    "description": "A class to represent, parse, and compose URIs",
+    "dependencies": [
+        "strings@1.2"
+    ],
+    "dev-dependencies": [
+        "testworks"
+    ],
+    "url": "https://github.com/dylan-lang/uri"
+}
