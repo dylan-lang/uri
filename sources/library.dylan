@@ -2,47 +2,56 @@ module: dylan-user
 
 define library uri
   use common-dylan;
-  use collection-extensions;
   use io;
   use system;
   use strings;
 
   export uri;
-end;
+end library;
 
 define module uri
-  use common-dylan,
-    exclude: { format-to-string };
-  use format;
-  use streams,
-    import: { <byte>, <byte-character> };
-  use strings;
+  // Errors
+  create
+    <uri-error>,
+    <uri-parse-error>;
 
-  export
-    <uri>, <url>,
-    uri-scheme, uri-scheme-setter,
-    uri-userinfo, uri-userinfo-setter,
-    uri-host, uri-host-setter,
-    uri-port, uri-port-setter,
-    uri-path, uri-path-setter,
-    uri-query, uri-query-setter,
-    uri-fragment, uri-fragment-setter,
-    uri-authority /* not defined --cgay   uri-authority-setter */;
-  export
-    parse-uri, parse-url,
-    build-uri, transform-uris,
-    build-path, build-query;
-  export
-    remove-dot-segments,
-    split-path,
-    split-query;
-  export
-    absolute?,
-    relative?;
-  export
+  // Creation and conversion
+  create
+    merge-uris,
+    split-uri,
+    string-to-uri,
+    uri-to-string;
+
+  // URI class and getters
+  create
+    <uri>,
+    uri-scheme,
+    uri-user-info, uri-raw-user-info,
+    uri-host, uri-raw-host,
+    uri-port,
+    uri-authority,
+    uri-path, uri-raw-path,
+    uri-query, uri-raw-query, uri-query-value,
+    uri-fragment, uri-raw-fragment,
+    uri-relative?;
+
+  // Percent encoding
+  create
     percent-encode,
     percent-decode,
-    $uri-pchar;
-  export
-    <uri-parse-error>;
-end;
+    $charset-user-info,
+    $charset-host,
+    $charset-path,
+    $charset-query,
+    $charset-fragment;
+end module;
+
+define module uri-internal
+  use byte-vector,
+    import: { copy-bytes };
+  use common-dylan,
+    exclude: { format-to-string };
+  use streams;
+  use strings;
+  use uri;
+end module;

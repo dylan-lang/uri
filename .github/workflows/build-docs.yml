@@ -1,0 +1,56 @@
+name: Build base64 documentation
+
+on:
+  push:
+    # all branches
+    paths:
+      - 'documentation/**'
+
+  # This enables the Run Workflow button on the Actions tab.
+  workflow_dispatch:
+
+# https://github.com/JamesIves/github-pages-deploy-action#readme
+permissions:
+    contents: write
+
+# Set DYLAN environment variable to GITHUB_WORKSPACE so packages are
+# installed in ../../_packages relative to documentation's Makefile
+env:
+  DYLAN: ${{ github.workspace }}
+
+jobs:
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Check Links
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/fraya/dylan-docs
+          options: -v ${{ github.workspace }}/doc:/docs
+          run: make linkcheck
+
+      - name: Build Docs with Furo Theme
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/fraya/dylan-docs
+          options: -v ${{ github.workspace }}/doc:/docs
+          run: make html
+
+      - name: Upload HTML Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: uri-doc-html
+          path: doc/build/html/
+
+      - name: Bypassing Jekyll on GH Pages
+        run: sudo touch doc/build/html/.nojekyll
+
+      - name: Deploy Documents to GH Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: doc/build/html
