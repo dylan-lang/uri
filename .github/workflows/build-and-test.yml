@@ -3,8 +3,11 @@ name: build-and-test
 on:
   push:
     # all branches
+    paths-ignore:
+      - 'doc/**'
   pull_request:
-    # all branches
+    paths-ignore:
+      - 'doc/**'
 
   # This enables the Run Workflow button on the Actions tab.
   workflow_dispatch:
@@ -26,12 +29,10 @@ jobs:
         run: deft update
 
       - name: Build and Run Tests
-        run: |
-          mkdir -p _build  # can't redirect without it
-          deft test -- --progress none --report surefire > _build/TEST-uri.xml
+        run: deft test -- --report surefire --report-file _build/test-output.xml
 
       - name: Publish Test Report
         if: success() || failure()
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@v6
         with:
-          report_paths: '**/_build/TEST-*.xml'
+          report_paths: '**/_build/test-output.xml'
